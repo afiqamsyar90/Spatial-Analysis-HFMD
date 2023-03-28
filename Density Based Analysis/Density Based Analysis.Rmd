@@ -20,7 +20,8 @@ library(spatstat)
 ```
 # Load HFMD Data 
 ```{r}
-HFMD_overall <- read_excel( here("HFMD_17_22.xlsx"))
+HFMD_overall <- read_excel( here("Density Based Analysis",
+                                 "HFMD_17_22.xlsx"))
 HFMD_overall <- st_as_sf(HFMD_overall,coords = c("X_LONGITUDE","X_LATITUDE"), 
                     crs = 4326)
 HFMD_overall <- st_transform(HFMD_overall, 3168)
@@ -96,7 +97,8 @@ count_HFMD_Mukim_Overall <- intersection_overall %>% count (YEAR,NAMA_DP,NAMMUK,
 ```
 # 3.Load population data
 ```{r}
-Gen_pop <- read_excel(here("Gen_Pop.xlsx"))
+Gen_pop <- read_excel(here("Density Based Analysis",
+                           "Gen_Pop.xlsx"))
 ```
 # 4.calculate incidence
 ```{r}

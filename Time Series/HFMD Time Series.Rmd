@@ -21,7 +21,7 @@ library(tseries)
 ```
 # Read Data
 ```{r}
-TS_HFMD <- read_excel("C:/Users/ACER/Desktop/SARIMA/Time_Series_HFMD.xlsx")
+TS_HFMD <- read_excel("Time_Series_HFMD.xlsx")
 ```
 ```{r}
 (TS_HFMD)

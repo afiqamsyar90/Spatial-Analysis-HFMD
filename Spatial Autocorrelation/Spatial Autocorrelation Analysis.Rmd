@@ -13,12 +13,18 @@ library (ggplot2)
 ```
 # Load Data
 ```{r}
-df_17 <- read_excel( here("count_HFMD_Mukim_17_Cases.xlsx"))
-df_18 <- read_excel( here("HFMD_2018_Mukim.xlsx"))
-df_19 <- read_excel( here("HFMD_2019_Mukim.xlsx"))
-df_20 <- read_excel( here("HFMD_2020_Mukim.xlsx"))
-df_21 <- read_excel( here("HFMD_2021_Mukim.xlsx"))
-df_22 <- read_excel( here("HFMD_2022_Mukim.xlsx"))
+df_17 <- read_excel( here("Spatial Autocorrelation",
+                          "count_HFMD_Mukim_17_Cases.xlsx"))
+df_18 <- read_excel( here("Spatial Autocorrelation",
+                          "HFMD_2018_Mukim.xlsx"))
+df_19 <- read_excel( here("Spatial Autocorrelation",
+                          "HFMD_2019_Mukim.xlsx"))
+df_20 <- read_excel( here("Spatial Autocorrelation",
+                          "HFMD_2020_Mukim.xlsx"))
+df_21 <- read_excel( here("Spatial Autocorrelation",
+                          "HFMD_2021_Mukim.xlsx"))
+df_22 <- read_excel( here("Spatial Autocorrelation",
+                          "HFMD_2022_Mukim.xlsx"))
 Penang <- st_read(here("Penang", 
                   "mukim2000_penang1.shp"))
 ```
