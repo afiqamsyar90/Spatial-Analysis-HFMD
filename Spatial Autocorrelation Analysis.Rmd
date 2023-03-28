@@ -1,0 +1,233 @@
+---
+title: "Spatial Autocorrelation Analysis"
+author: "Dr Afiq"
+date: "2023-03-22"
+output: html_document
+---
+```{r}
+library(spdep)
+library(sf)
+library (readxl)
+library (here)
+library (ggplot2)
+```
+# Load Data
+```{r}
+df_17 <- read_excel( here("count_HFMD_Mukim_17_Cases.xlsx"))
+df_18 <- read_excel( here("HFMD_2018_Mukim.xlsx"))
+df_19 <- read_excel( here("HFMD_2019_Mukim.xlsx"))
+df_20 <- read_excel( here("HFMD_2020_Mukim.xlsx"))
+df_21 <- read_excel( here("HFMD_2021_Mukim.xlsx"))
+df_22 <- read_excel( here("HFMD_2022_Mukim.xlsx"))
+Penang <- st_read(here("Penang", 
+                  "mukim2000_penang1.shp"))
+```
+```{r}
+st_crs(Penang)<-3168
+```
+
+# Merge with Penang Polygon
+```{r}
+HFMD_Poly_17 <- merge(Penang, df_17, by = c("NAMA_DP", "NAMMUK"))
+HFMD_Poly_18 <- merge(Penang, df_18, by = c("NAMA_DP", "NAMMUK"))
+HFMD_Poly_19 <- merge(Penang, df_19, by = c("NAMA_DP", "NAMMUK"))
+HFMD_Poly_20 <- merge(Penang, df_20, by = c("NAMA_DP", "NAMMUK"))
+HFMD_Poly_21 <- merge(Penang, df_21, by = c("NAMA_DP", "NAMMUK"))
+HFMD_Poly_22 <- merge(Penang, df_22, by = c("NAMA_DP", "NAMMUK"))
+```
+# Set Neighbouring Polygon for autocorrelation analysis (using QUEEN approach)
+```{r}
+nb_17 <- poly2nb(HFMD_Poly_17, queen = TRUE)
+nb_18 <- poly2nb(HFMD_Poly_18, queen = TRUE)
+nb_19 <- poly2nb(HFMD_Poly_19, queen = TRUE)
+nb_20 <- poly2nb(HFMD_Poly_20, queen = TRUE)
+nb_21 <- poly2nb(HFMD_Poly_21, queen = TRUE)
+nb_22 <- poly2nb(HFMD_Poly_22, queen = TRUE)
+```
+# view Neighbour for (1st Mukim)
+```{r}
+nb_17[[1]]
+nb_18 [[1]]
+```
+#Assign Weight for Mukim that contribute to Case in particular mukim
+```{r}
+lw_17 <- nb2listw(nb_17, style = "W" , zero.policy = TRUE)
+lw_18 <- nb2listw(nb_18, style = "W" , zero.policy = TRUE)
+lw_19 <- nb2listw(nb_19, style = "W" , zero.policy = TRUE)
+lw_20 <- nb2listw(nb_20, style = "W" , zero.policy = TRUE)
+lw_21 <- nb2listw(nb_21, style = "W" , zero.policy = TRUE)
+lw_22 <- nb2listw(nb_22, style = "W" , zero.policy = TRUE)
+```
+# Create Lag Function for Moran Test
+```{r}
+HFMD_17_lag <- lag.listw(lw_17, HFMD_Poly_17$n)
+HFMD_18_lag <- lag.listw(lw_18, HFMD_Poly_18$n)
+HFMD_19_lag <- lag.listw(lw_19, HFMD_Poly_19$n)
+HFMD_20_lag <- lag.listw(lw_20, HFMD_Poly_20$n)
+HFMD_21_lag <- lag.listw(lw_21, HFMD_Poly_21$n)
+HFMD_22_lag <- lag.listw(lw_22, HFMD_Poly_22$n)
+```
+# Computing Global Moran I for cases in 2017
+```{r}
+moran.test(HFMD_Poly_17$n, lw_17)
+moran.test(HFMD_Poly_18$n, lw_18)
+moran.test(HFMD_Poly_19$n, lw_19)
+moran.test(HFMD_Poly_20$n, lw_20)
+moran.test(HFMD_Poly_21$n, lw_21)
+moran.test(HFMD_Poly_22$n, lw_22)
+```
+# Computing Local Moran Analysis
+```{r}
+Local_Moran_17 <- localmoran(HFMD_Poly_17$n,lw_17)
+Local_Moran_18 <- localmoran(HFMD_Poly_18$n,lw_18)
+Local_Moran_19 <- localmoran(HFMD_Poly_19$n,lw_19)
+Local_Moran_20 <- localmoran(HFMD_Poly_20$n,lw_20)
+Local_Moran_21 <- localmoran(HFMD_Poly_21$n,lw_21)
+Local_Moran_22 <- localmoran(HFMD_Poly_22$n,lw_22)
+```
+# Join results to sf data
+```{r}
+HFMD_Poly_17 <- cbind(HFMD_Poly_17, Local_Moran_17)
+HFMD_Poly_18 <- cbind(HFMD_Poly_18, Local_Moran_18)
+HFMD_Poly_19 <- cbind(HFMD_Poly_19, Local_Moran_19)
+HFMD_Poly_20 <- cbind(HFMD_Poly_20, Local_Moran_20)
+HFMD_Poly_21 <- cbind(HFMD_Poly_21, Local_Moran_21)
+HFMD_Poly_22 <- cbind(HFMD_Poly_22, Local_Moran_22)
+```
+#Plot Local Moran Statistic 17
+```{r}
+ggplot(data = HFMD_Poly_17) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2017",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_18) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2018",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_19) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2019",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_20) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2020",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_21) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2021",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_22) +
+  geom_sf(aes(fill=Ii)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Local Moran's I") +
+  labs(title="Local Moran's I statistic for HFMD in 2022",
+       subtitle="Pulau Pinang")
+```
+
+## LISA (Local Indicator od Spatial Association)
+
+#Center the variable of interest around its mean
+```{r}
+m_Q_17 <- HFMD_Poly_17$n - mean(HFMD_Poly_17$n)
+m_Q_18 <- HFMD_Poly_18$n - mean(HFMD_Poly_18$n)
+m_Q_19 <- HFMD_Poly_19$n - mean(HFMD_Poly_19$n)
+m_Q_20 <- HFMD_Poly_20$n - mean(HFMD_Poly_20$n)
+m_Q_21 <- HFMD_Poly_21$n - mean(HFMD_Poly_21$n)
+m_Q_22 <- HFMD_Poly_22$n - mean(HFMD_Poly_22$n)
+```
+# Center the local Moran around the mean
+```{r}
+m_Q_Local_17 <- Local_Moran_17[,1]- mean(Local_Moran_17[,1])
+m_Q_Local_18 <- Local_Moran_18[,1]- mean(Local_Moran_18[,1])
+m_Q_Local_19 <- Local_Moran_19[,1]- mean(Local_Moran_19[,1])
+m_Q_Local_20 <- Local_Moran_20[,1]- mean(Local_Moran_20[,1])
+m_Q_Local_21 <- Local_Moran_21[,1]- mean(Local_Moran_21[,1])
+m_Q_Local_22 <- Local_Moran_22[,1]- mean(Local_Moran_22[,1])
+```
+#significance threshold
+```{r}
+signif <- 0.05
+```
+#builds a data quadrant
+```{r}
+quadrant_17 <- vector(mode="numeric",length = nrow(Local_Moran_17))
+quadrant_18 <- vector(mode="numeric",length = nrow(Local_Moran_18))
+quadrant_19 <- vector(mode="numeric",length = nrow(Local_Moran_19))
+quadrant_20 <- vector(mode="numeric",length = nrow(Local_Moran_20))
+quadrant_21 <- vector(mode="numeric",length = nrow(Local_Moran_21))
+quadrant_22 <- vector(mode="numeric",length = nrow(Local_Moran_22))
+```
+```{r}
+quadrant_17 [m_Q_17>0 & m_Q_Local_17>0] <- 4
+quadrant_17 [m_Q_17<0 & m_Q_Local_17<0] <- 1
+quadrant_17 [m_Q_17<0 & m_Q_Local_17>0] <- 2
+quadrant_17 [m_Q_17>0 & m_Q_Local_17<0] <- 3
+quadrant_17 [Local_Moran_17[,5]] <- 0
+quadrant_18 [m_Q_18>0 & m_Q_Local_18>0] <- 4
+quadrant_18 [m_Q_18<0 & m_Q_Local_18<0] <- 1
+quadrant_18 [m_Q_18<0 & m_Q_Local_18>0] <- 2
+quadrant_18 [m_Q_18>0 & m_Q_Local_18<0] <- 3
+quadrant_18 [Local_Moran_18[,5]] <- 0
+quadrant_19 [m_Q_19>0 & m_Q_Local_19>0] <- 4
+quadrant_19 [m_Q_19<0 & m_Q_Local_19<0] <- 1
+quadrant_19 [m_Q_19<0 & m_Q_Local_19>0] <- 2
+quadrant_19 [m_Q_19>0 & m_Q_Local_19<0] <- 3
+quadrant_19 [Local_Moran_19[,5]] <- 0
+quadrant_20 [m_Q_20>0 & m_Q_Local_20>0] <- 4
+quadrant_20 [m_Q_20<0 & m_Q_Local_20<0] <- 1
+quadrant_20 [m_Q_20<0 & m_Q_Local_20>0] <- 2
+quadrant_20 [m_Q_20>0 & m_Q_Local_20<0] <- 3
+quadrant_20 [Local_Moran_20[,5]] <- 0
+quadrant_21 [m_Q_21>0 & m_Q_Local_21>0] <- 4
+quadrant_21 [m_Q_21<0 & m_Q_Local_21<0] <- 1
+quadrant_21 [m_Q_21<0 & m_Q_Local_21>0] <- 2
+quadrant_21 [m_Q_21>0 & m_Q_Local_21<0] <- 3
+quadrant_21[Local_Moran_21[,5]] <- 0
+quadrant_22 [m_Q_22>0 & m_Q_Local_22>0] <- 4
+quadrant_22 [m_Q_22<0 & m_Q_Local_22<0] <- 1
+quadrant_22 [m_Q_22<0 & m_Q_Local_22>0] <- 2
+quadrant_22 [m_Q_22>0 & m_Q_Local_22<0] <- 3
+quadrant_22[Local_Moran_22[,5]] <- 0
+```
+# plot LISA Map
+```{r}
+brks <- c(0,1,2,3,4)
+colors <- c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red")
+plot(HFMD_Poly_17[,5],main = "LISA Map 2017", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+plot(HFMD_Poly_18[,6],main = "LISA Map 2018", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+plot(HFMD_Poly_19[,6],main = "LISA Map 2019", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+plot(HFMD_Poly_20[,6],main = "LISA Map 2020", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+plot(HFMD_Poly_21[,6],main = "LISA Map 2021", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+plot(HFMD_Poly_22[,6],main = "LISA Map 2022", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+```
+
+
+
