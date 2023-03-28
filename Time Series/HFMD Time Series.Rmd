@@ -1,0 +1,47 @@
+---
+title: "SARIMA"
+author: "Afiq"
+date: "2023-03-02"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+# Prepare Environment
+```{r}
+library(tidyverse)
+library(ggfortify)
+library(ggplot2)
+library(forecast)
+library(readxl)
+library(here)
+library(forecast)
+library(tseries)
+```
+# Read Data
+```{r}
+TS_HFMD <- read_excel("C:/Users/ACER/Desktop/SARIMA/Time_Series_HFMD.xlsx")
+```
+```{r}
+(TS_HFMD)
+```
+#Create Time series data frame
+```{r}
+HFMD_time_series = ts(TS_HFMD$Case, start = c(2017, 1), end = c(2022, 12), frequency = 12)
+```
+```{r}
+class(HFMD_time_series)
+```
+#plot HFMD time-series
+```{r}
+autoplot(HFMD_time_series) + geom_bar(stat = "identity", fill ="purple" ) + 
+  labs(title = "Monthly Distribution of HFMD Infections in Pulau Pinang",
+       y="Number of Cases", x= "Month") 
+```
+```{r}
+autoplot(HFMD_time_series) + geom_bar(stat = "identity", fill ="purple" ) +  geom_smooth ()+
+  labs(title = "Monthly Distribution of HFMD Infections in Pulau Pinang",
+       y="Number of Cases", x= "Month") 
+```
+
