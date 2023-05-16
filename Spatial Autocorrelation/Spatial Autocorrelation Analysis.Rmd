@@ -10,6 +10,9 @@ library(sf)
 library (readxl)
 library (here)
 library (ggplot2)
+library (tmap)
+library(leaflet)
+library (RColorBrewer)
 ```
 # Load Data
 ```{r}
@@ -100,7 +103,8 @@ HFMD_Poly_20 <- cbind(HFMD_Poly_20, Local_Moran_20)
 HFMD_Poly_21 <- cbind(HFMD_Poly_21, Local_Moran_21)
 HFMD_Poly_22 <- cbind(HFMD_Poly_22, Local_Moran_22)
 ```
-#Plot Local Moran Statistic 17
+
+#Plot Local Moran Statistic 
 ```{r}
 ggplot(data = HFMD_Poly_17) +
   geom_sf(aes(fill=Ii)) +
@@ -144,6 +148,82 @@ ggplot(data = HFMD_Poly_22) +
                        name="Local Moran's I") +
   labs(title="Local Moran's I statistic for HFMD in 2022",
        subtitle="Pulau Pinang")
+```
+# Plot Local Moran Using TMAP
+```{r name-of-chunk, fig.width=9, fig.height=5}
+LM_17<-tm_shape(Penang) + 
+  tm_fill(col="#f7f7f7")+ tm_style("natural")+ 
+tm_shape(HFMD_Poly_17) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") + tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2017",title.size = 1) 
+LM_18<-tm_shape(Penang) + 
+  tm_fill(col="#f7f7f7")+ tm_style("natural")+
+tm_shape(HFMD_Poly_18) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") +tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2018",title.size = 1)
+LM_19<-tm_shape(Penang) + 
+ tm_fill(col="#f7f7f7")+ tm_style("natural")+
+tm_shape(HFMD_Poly_19) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") +tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2019",title.size = 1) 
+LM_20<-tm_shape(Penang) + 
+  tm_polygons(col="#f7f7f7")+ tm_style("natural")+
+tm_shape(HFMD_Poly_20) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") +tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2020",title.size = 1) 
+LM_21<-tm_shape(Penang) + 
+  tm_polygons(col="#f7f7f7")+ tm_style("natural")+
+tm_shape(HFMD_Poly_21) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") +tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2021",title.size = 1) 
+LM_22<-tm_shape(Penang) + 
+ tm_fill(col="#f7f7f7")+ tm_style("natural")+
+tm_shape(HFMD_Poly_22) +
+  tm_polygons(col = "Ii", title = "Local Moran's I", style = "jenks",palette = "Reds") +tm_scale_bar(position = c("right", "top")) +
+  tm_layout(title = "2022",title.size = 1) 
+```
+
+```{r name-of-chunk, fig.width=11, fig.height=9}
+tmap_arrange(LM_17,LM_18,LM_19,LM_20,LM_21,LM_22, ncol = 3) 
+```
+
+```{r}
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_17) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = "2017",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_18) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = " 2018",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_19) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = "2019",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_20) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = " 2020",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_21) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = " 2021",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_22) +
+  tm_polygons(col = "Pr.z....E.Ii..", title = "Significance level", breaks = c(-Inf,0.001,0.01,0.05,Inf),palette = "-YlOrRd") +
+  tm_layout(main.title = "2022",title.size = 1.5) +
+tm_compass(type = "4star", size = 2, position = c("left", "top"))
 ```
 
 ## LISA (Local Indicator od Spatial Association)
@@ -214,26 +294,218 @@ quadrant_22[Local_Moran_22[,5]] <- 0
 # plot LISA Map
 ```{r}
 brks <- c(0,1,2,3,4)
-colors <- c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red")
+colors <- c("grey", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red")
 plot(HFMD_Poly_17[,5],main = "LISA Map 2017", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
-plot(HFMD_Poly_18[,6],main = "LISA Map 2018", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+plot(HFMD_Poly_18[,6],main = "LISA Map 2018", las = 1, border="lightgray",col=colors[findInterval(quadrant_18,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
-plot(HFMD_Poly_19[,6],main = "LISA Map 2019", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+plot(HFMD_Poly_19[,6],main = "LISA Map 2019", las = 1, border="lightgray",col=colors[findInterval(quadrant_19,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
-plot(HFMD_Poly_20[,6],main = "LISA Map 2020", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+plot(HFMD_Poly_20[,6],main = "LISA Map 2020", las = 1, border="lightgray",col=colors[findInterval(quadrant_20,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
-plot(HFMD_Poly_21[,6],main = "LISA Map 2021", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+plot(HFMD_Poly_21[,6],main = "LISA Map 2021", las = 1, border="lightgray",col=colors[findInterval(quadrant_21,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
-plot(HFMD_Poly_22[,6],main = "LISA Map 2022", las = 1, border="lightgray",col=colors[findInterval(quadrant_17,brks,all.inside = FALSE)])
+plot(HFMD_Poly_22[,6],main = "LISA Map 2022", las = 1, border="black",col=colors[findInterval(quadrant_22,brks,all.inside = FALSE)])
 legend("bottomright",legend = c("insignificant","low-low","low-high","high-low","high-high"),
        fill=colors,bty="n")
 ```
+```{r}
+#bind quadrant and Poly data
+LISA_17 <- cbind(HFMD_Poly_17, quadrant_17)
+LISA_18 <- cbind(HFMD_Poly_18, quadrant_18)
+LISA_19 <- cbind(HFMD_Poly_19, quadrant_19)
+LISA_20 <- cbind(HFMD_Poly_20, quadrant_20)
+LISA_21 <- cbind(HFMD_Poly_21, quadrant_21)
+LISA_22 <- cbind(HFMD_Poly_22, quadrant_22)
+```
+
+# Plot LISA using TMAP
+```{r}
+LISA_Map_17 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") + 
+tm_shape(LISA_17) + tm_polygons(col = "quadrant_17", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2017",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+LISA_Map_18 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") + 
+tm_shape(LISA_18) + tm_polygons(col = "quadrant_18", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2018",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+LISA_Map_19 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") + 
+tm_shape(LISA_19) + tm_polygons(col = "quadrant_19", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2019",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+LISA_Map_20 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") +
+tm_shape(LISA_20) + tm_polygons(col = "quadrant_20", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2020",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+LISA_Map_21 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") + 
+tm_shape(LISA_21) + tm_polygons(col = "quadrant_21", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2021",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+LISA_Map_22 <- tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+ tm_style("natural") +
+tm_shape(LISA_22) + tm_polygons(col = "quadrant_22", breaks = c(0,1,2,3,4,5), palette= 
+                              c("white", "blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha = 0.4),"red"),
+                                labels = c("Non Significant","Low-Low","Low-High","High-Low", "High-High"), title="") +
+ tm_scale_bar(position = c("left", "top")) +
+  tm_layout(title = "2022",title.size = 1) + tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+```{r name-of-chunk, fig.width=11, fig.height=9}
+tmap_arrange(LISA_Map_17,LISA_Map_18,LISA_Map_19,LISA_Map_20,LISA_Map_21,LISA_Map_22 , ncol = 3) 
+```
+# Getis - Ord Gi* Statistic 
+
+```{r}
+# Perform Local G analysis
+getis_ord_17 <- spdep ::localG(
+  HFMD_Poly_17$n,lw_17)
+getis_ord_18 <- spdep ::localG(
+  HFMD_Poly_18$n,lw_18)
+getis_ord_19 <- spdep ::localG(
+  HFMD_Poly_19$n,lw_19)
+getis_ord_20 <- spdep ::localG(
+  HFMD_Poly_20$n,lw_20)
+getis_ord_21 <- spdep ::localG(
+  HFMD_Poly_21$n,lw_21)
+getis_ord_22 <- spdep ::localG(
+  HFMD_Poly_22$n,lw_22)
+```
+
+```{r}
+# join the result with SF data
+HFMD_Poly_17$getis_ord_17 <- getis_ord_17 
+HFMD_Poly_18$getis_ord_18 <- getis_ord_18 
+HFMD_Poly_19$getis_ord_19 <- getis_ord_19 
+HFMD_Poly_20$getis_ord_20 <- getis_ord_20 
+HFMD_Poly_21$getis_ord_21 <- getis_ord_21 
+HFMD_Poly_22$getis_ord_22 <- getis_ord_22 
+```
+```{r}
+ggplot(data = HFMD_Poly_17) +
+  geom_sf(aes(fill=getis_ord_17)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2017",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_18) +
+  geom_sf(aes(fill=getis_ord_18)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2018",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_19) +
+  geom_sf(aes(fill=getis_ord_19)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2019",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_20) +
+  geom_sf(aes(fill=getis_ord_20)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2020",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_21) +
+  geom_sf(aes(fill=getis_ord_21)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2021",
+       subtitle="Pulau Pinang")
+ggplot(data = HFMD_Poly_22) +
+  geom_sf(aes(fill=getis_ord_22)) +
+ theme_bw() +
+  scale_fill_gradient2(low="#2c7bb6", mid="#ffffbf", high="#d7191c",
+                       name="Gi*") +
+  labs(title="Getis - Ord Gi* Statistic for HFMD in 2022",
+       subtitle="Pulau Pinang")
+```
+# Population and Cases
+```{r}
+#plot penang Population
+tm_shape(Penang) + tm_borders(alpha=.6)+tm_shape(HFMD_Penang_Overall_Incidence)+ tm_polygons("PENDUDUK_L",title = "Population",title.size = 0.5) + tm_layout(main.title = "Population") +tm_layout(legend.outside = TRUE) +tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
+tm_shape(Penang) + tm_borders(alpha=.6) + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("n",title = "HFMD Cases",title.size = 0.5) + tm_layout(main.title = "HFMD Cases") +tm_layout(legend.outside = TRUE) +tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
+```
+```{r}
+#using tmap
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_17) +
+  tm_polygons(col = "getis_ord_17", title = "Gi Statistic",
+             midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd"))+
+  tm_layout(main.title = "2017",title.size = 1) +
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_18) +
+  tm_polygons(col = "getis_ord_18", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
+  tm_layout(main.title = "2018",title.size = 1) +
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_19) +
+  tm_polygons(col = "getis_ord_19", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
+  tm_layout(main.title = "2019",title.size = 1) +
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_20) +
+  tm_polygons(col = "getis_ord_20", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
+  tm_layout(main.title = "2020",title.size = 1) +
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_21) +
+  tm_polygons(col = "getis_ord_21", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
+ tm_layout(main.title = "2021",title.size = 1) +
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_22) +
+  tm_polygons(col = "getis_ord_22", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
+ tm_layout(main.title = "2022",title.size = 1) +
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+```{r}
+tm_shape(Penang) + 
+  tm_polygons(col = "#f7f7f7")+
+tm_shape(HFMD_Poly_17) +
+  tm_polygons(col = "getis_ord_17", title = "Gi Statistic",midpoint = NA,style = "cont",n = 4,palette = rev(colorRampPalette(c("red", "lightblue"))(100))) +
+ tm_layout(main.title = "2017",title.size = 1) +
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(HFMD_Poly_22) +
+  tm_polygons(col = "getis_ord_22", title = "Gi Statistic",midpoint = NA,style = "cont",n = 4,palette = rev(colorRampPalette(c("red", "lightblue"))(100))) +
+ tm_layout(main.title = "2022",title.size = 1) +
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+
+
+
+
+
 
 
 
