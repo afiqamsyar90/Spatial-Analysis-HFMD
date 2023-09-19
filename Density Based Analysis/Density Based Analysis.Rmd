@@ -3,12 +3,13 @@ title: "Point Pattern Analysis (Density_Based)"
 author: "Afiq"
 date: "2023-03-20"
 output:
+  word_document: default
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
-  word_document: default
 ---
 ```{r}
+library(writexl)
 library(readxl)
 library(sf)
 library(ggplot2)
@@ -17,6 +18,8 @@ library(here)
 library(tmap)
 library(dplyr)
 library(spatstat)
+library(tidyverse)
+library (RColorBrewer)
 ```
 # Load HFMD Data 
 ```{r}
@@ -26,7 +29,7 @@ HFMD_overall <- st_as_sf(HFMD_overall,coords = c("X_LONGITUDE","X_LATITUDE"),
                     crs = 4326)
 HFMD_overall <- st_transform(HFMD_overall, 3168)
 Penang <- st_read(here("Penang", 
-                  "mukim2000_penang1.shp"))
+                  "mukim2000_penang1.shp")) 
 ```
 #View Data
 ```{r}
@@ -38,34 +41,60 @@ glimpse(HFMD_overall)
 ```
 # Plot HFMD points(2017-2022) in Penang Polygon
 ```{r}
-tm_shape(Penang)+ tm_polygons("NAMA_DP", title = "HFMD Cases in Pulau Pinang 2017-2022",title.size = 10)+tm_shape(HFMD_overall) + tm_dots(col = "black")+ tm_layout(legend.outside = TRUE)
+tm_shape(Penang)+tm_polygons("NAMMUK", title = "Subdistricts")+ tm_style("natural") +
+  tm_layout(main.title = "Pulau Pinang")+ tmap_options(max.categories = 51)+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top")) + tm_scale_bar(position = c("left", "bottom"))
+```
+
+```{r}
+tm_shape(Penang)+ tm_polygons("NAMA_DP", title = "District")+ tm_style("natural") + #BaseMap Penang
+  tm_shape(HFMD_overall) + tm_dots(size = 0.05,col = "black")+ #Geolocation of Cases
+  tm_layout(legend.outside = TRUE,
+            main.title = "HFMD Infection in Pulau Pinang")+ # Cosmetic
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))+ 
+  tm_scale_bar(position = c("left", "bottom")) 
 ```
 
 ## Plot Yearly HFMD Cases in Pulau Pinang
 
-```{r}
+```{r name-of-chunk, fig.width=9, fig.height=9}
 tm_shape(Penang) +
-  tm_polygons("NAMA_DP", title = "HFMD Cases Between 2017-2022",title.size = 1) + 
-  tm_shape(HFMD_overall) + tm_layout( legend.outside = TRUE) + tm_dots(col = "black", size = 0.03 ) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
+  tm_polygons("NAMA_DP",title = "DISTRICT") + tm_style("natural") +
+  tm_shape(HFMD_overall) + tm_layout( legend.outside = TRUE) + tm_dots(col = "black", size = 0.03 ) +
+  tm_layout(main.title = "HFMD Infection in Pulau Pinang 2017-2022") + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE) + tm_compass(type = "4star", size = 2, position = c("left", "top")) + tm_scale_bar(position = c("left", "bottom"))
 ```
 
 ## Plot HFMD points(2017-2022) according to district
 
 ```{r}
-tm_shape(Penang[Penang$NAMA_DP == "TIMUR LAUT",])+
-  tm_polygons("NAMMUK",title = "HFMD Cases in TIMUR LAUT 2017-2022")+
+#Plot Case According to district
+ggplot(
+  data = HFMD_overall,
+  mapping = aes (
+    x = fct_rev(fct_infreq (DAERAH)))) +
+  geom_bar() +
+  coord_flip()+
+  theme_classic()+
+  labs(
+    x = "District",
+    y = "Number of Cases",
+    title = "HFMD Cases in Pulau Pinang"
+  )
+```
+```{r}
+tm_shape(Penang[Penang$NAMA_DP == "TIMUR LAUT",])+tm_layout(main.title = "HFMD Infection in Timur Laut 2017-2022") +
+  tm_polygons("NAMMUK",title = "SUBDISTRICT") +
   tm_shape(HFMD_overall[HFMD_overall$DAERAH == "TIMUR LAUT",])+tm_dots (col = "black")+tm_layout(legend.outside = TRUE) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 tm_shape(Penang[Penang$NAMA_DP == "BARAT DAYA",])+
-  tm_polygons("NAMMUK",title = "HFMD Cases in BARAT DAYA 2017-2022")+
+  tm_polygons("NAMMUK",title = "SUBDISTRICT")+tm_layout(main.title = "HFMD Infection in Barat Daya 2017-2022") +
   tm_shape(HFMD_overall[HFMD_overall$DAERAH == "BARAT DAYA",])+tm_dots (col = "black")+tm_layout(legend.outside = TRUE) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 tm_shape(Penang[Penang$NAMA_DP == "SP.TENGAH",])+
-  tm_polygons("NAMMUK",title = "HFMD Cases in SP.Tengah 2017-2022")+
+  tm_polygons("NAMMUK",title = "SUBDISTRICT")+tm_layout(main.title = "HFMD Infection in SP.Tengah 2017-2022") +
   tm_shape(HFMD_overall[HFMD_overall$DAERAH == "Seberang PERAI TENGAH",])+tm_dots (col = "black")+tm_layout(legend.outside = TRUE) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 tm_shape(Penang[Penang$NAMA_DP == "SP.UTARA",])+
-  tm_polygons("NAMMUK",title = "HFMD Cases in SP.UTARA 2017-2022")+
+  tm_polygons("NAMMUK",title = "SUBDISTRICT")+tm_layout(main.title = "HFMD Infection in SP.Utara 2017-2022") +
   tm_shape(HFMD_overall[HFMD_overall$DAERAH == "SEBERANG PERAI UTARA",])+tm_dots (col = "black")+tm_layout(legend.outside = TRUE) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 tm_shape(Penang[Penang$NAMA_DP == "SP.SELATAN",])+
-  tm_polygons("NAMMUK",title = "HFMD Cases in SP. Selatan 2017-2022")+
+  tm_polygons("NAMMUK",title = "SUBDISTRICT")+  tm_layout(main.title = "HFMD Infection in SP.Selatan")+
   tm_shape(HFMD_overall[HFMD_overall$DAERAH == "Seberang PERAI SELATAN",])+tm_dots (col = "black")+tm_layout(legend.outside = TRUE) + tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 ```
 
@@ -80,10 +109,15 @@ HFMD_overall$MONTH <- factor(HFMD_overall$MONTH,
 ```
 #### Plotting monthly HFMD Map
 ```{r}
-tm_shape(Penang) +
-  tm_polygons("NAMA_DP", title = "Monthly HFMD Cases",title.size = 1) + 
-  tm_shape(HFMD_overall) + tm_layout( legend.outside = TRUE) + tm_dots(col = "black", size = 0.03 ) + tm_facets("MONTH", nrow = 2, ncol = 6, as.layers = TRUE)
+tm_shape(Penang) + 
+  tm_polygons("NAMA_DP", title = "DISTRICT") + 
+  tm_layout(main.title = "Monthly HFMD Cases")+
+  tm_shape(HFMD_overall) +
+  tm_layout( legend.outside = TRUE) + 
+  tm_dots(col = "black", size = 0.03 ) + 
+  tm_facets("MONTH", "YEAR",nrow = 2, ncol = 6, as.layers = TRUE)
 ```
+
 # Incidence of HFMD in Pulau Pinang 
 # 1.Prepare Data
 # 2.count point in each Mukim 
@@ -105,6 +139,14 @@ Gen_pop <- read_excel(here("Density Based Analysis",
 HFMD_Penang_Overall <- merge(count_HFMD_Mukim_Overall,Gen_pop, by = c("YEAR", "NAMA_DP","NAMMUK") , all=TRUE)
 Overall_Incidence <- HFMD_Penang_Overall %>% mutate(Incidence_1000 = (n/PENDUDUK_L)*1000)
 ```
+# 4.1 Plotting Frequency of HFMD cases 
+```{r,fig.width=8, fig.height=6}
+Cases <- tm_shape(Penang) + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("n",style = "jenks", palette = brewer.pal(5, "YlOrRd"),title = "Number of HFMD Cases") + tm_style("natural")+ tm_compass(type = "4star", size = 2, position = c("left", "top")) +  tm_scale_bar(position = c("right", "top")) 
+Population <- tm_shape(Penang) + tm_borders(alpha=.6)+tm_shape(HFMD_Penang_Overall_Incidence)+ tm_polygons("PENDUDUK_L",style = "jenks", palette = brewer.pal(5, "YlOrRd"),title = "Population") + tm_style("natural")+ tm_compass(type = "4star", size = 2, position = c("left", "top")) +  tm_scale_bar(position = c("right", "top")) 
+Incidence <- tm_shape(Penang) + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("Incidence_1000",style = "jenks", palette = brewer.pal(5, "YlOrRd"), range = c(0, 1000),title = "Incidence Per 1000") +tm_style("natural")+ tm_compass(type = "4star", size = 2, position = c("left", "top")) +  tm_scale_bar(position = c("right", "top")) 
+tmap_arrange(Cases,Population,Incidence , ncol = 3) 
+```
+
 # 5. Merge Penang and HFMD Incidence Data
 ```{r}
 HFMD_Penang_Overall_Incidence <- st_join(Penang, Overall_Incidence)
@@ -112,11 +154,12 @@ glimpse(HFMD_Penang_Overall_Incidence)
 ```
 # 6.Plot HFMD Incidence in Pulau Pinang (Overall)
 ```{r}
-tm_shape(Penang) + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("Incidence_1000",style = "jenks", title = "Crude Incidence of HFMD per 1000 Population", palette = "Reds", range = c(0, 1000), breaks= 10)+tm_layout( legend.outside = TRUE) 
+tm_shape(Penang) + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("Incidence_1000",style = "jenks", palette = brewer.pal(5, "YlOrRd"), range = c(0, 1000),title = "Incidence Per 1000") +tm_layout( legend.outside = TRUE)  + tm_layout(main.title = "Incidence of HFMD In Pulau Pinang")+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) + tm_borders(alpha=.6)+tm_shape(HFMD_Penang_Overall_Incidence)+ tm_polygons("PENDUDUK_L",title = "Population",title.size = 0.5) + tm_layout(main.title = "Population") +tm_layout(legend.outside = TRUE) +tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
 ```
 # 7.Plot Yearly Incidence Rate of HFMD in Pulau Pinang
 ```{r}
-tm_shape(Penang) + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("Incidence_1000",style = "jenks", title = "Crude Incidence of HFMD per 1000 Population", palette = "Reds", range = c(0, 1000), breaks= 10) +  tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE)
+tm_shape(Penang) + tm_polygons(col = "#f7f7f7") + tm_borders(alpha=.6)  + tm_shape(HFMD_Penang_Overall_Incidence) + tm_polygons("Incidence_1000",style = "jenks", title = "Per 1000 Population", palette = "Reds", range = c(0, 1000)) +  tm_facets("YEAR", nrow = 2, ncol = 3, as.layers = TRUE) +tm_layout(main.title = "Incidence of HFMD in Pulau Pinang 2017-2022") +tm_compass(type = "4star", size = 2, position = c("left", "top")) +tm_style("natural") + tm_scale_bar(position = c("left", "bottom"))
 ```
 # 8. Yearly incidence according to district in Pulau Pinang
 # Timur Laut
@@ -165,7 +208,7 @@ Window(HFMD_overall.ppp) <- Penang.owin.km
 #Kernel Density Estimates (KDE) Pulau Pinang
 ```{r}
 HFMD_overall.density <- density(HFMD_overall.ppp, sigma=1) 
-data.class(HFMD_overall.density)
+class(HFMD_overall.density)
 ```
 #Rasterize the KDE image using package raster
 ```{r}
@@ -197,18 +240,19 @@ rasExt
 #4.apply the extent to our KDE raster
 ```{r}
 HFMD_overall.density.raster@extent <- rasExt
-HFMD_overall.density.raster
+
 ```
 ```{r}
 crs(HFMD_overall.density.raster) <- 3168
+
 ```
 ## Plot Intensity of HFMD in Pulau Pinang
 ```{r}
 tm_shape(Penang) +
   tm_borders(alpha=.6) +
   tm_shape(HFMD_overall.density.raster) + 
-  tm_raster(style = "quantile", n = 7 , palette = viridis(7, direction = 1), alpha = .4, title = "HFMD Intensity (Cases per KM square)") + 
-  tm_layout(legend.outside = TRUE)
+  tm_raster(style = "quantile", n = 7 , palette = viridis(7, direction = 1), alpha = .4, title = "KDE Values") + tm_layout(main.title = "Spatial Intensity of HFMD in Pulau Pinang",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
 ```
 ## KDE intensity by YEAR
 #Convert "YEAR" variable to factor with ordered levels
@@ -288,7 +332,132 @@ contour(Y2021.coor.density, add = TRUE)
 plot(Y2022.coor.density, main = "2022", las = 1)
 contour(Y2022.coor.density, add = TRUE)
 ```
-# KDE intensity by Gender
+```{r}
+#rasterize KDE image
+Y2017.coor.density.raster <- raster(Y2017.coor.density)
+Y2018.coor.density.raster <- raster(Y2018.coor.density)
+Y2019.coor.density.raster <- raster(Y2019.coor.density)
+Y2020.coor.density.raster <- raster(Y2020.coor.density)
+Y2021.coor.density.raster <- raster(Y2021.coor.density)
+Y2022.coor.density.raster <- raster(Y2022.coor.density)
+```
+```{r}
+#apply extend to KDE raster
+Y2017.coor.density.raster@extent <- rasExt
+Y2018.coor.density.raster@extent <- rasExt
+Y2019.coor.density.raster@extent <- rasExt
+Y2020.coor.density.raster@extent <- rasExt
+Y2021.coor.density.raster@extent <- rasExt
+Y2022.coor.density.raster@extent <- rasExt
+```
+```{r}
+# transform coordinate
+crs (Y2017.coor.density.raster)<- 3168
+crs (Y2018.coor.density.raster)<- 3168
+crs (Y2019.coor.density.raster)<- 3168
+crs (Y2020.coor.density.raster)<- 3168
+crs (Y2021.coor.density.raster)<- 3168
+crs (Y2022.coor.density.raster)<- 3168
+```
+```{r}
+# Plot intensity map
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2017.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(5, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2017",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2018.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(5, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2018",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2019.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(5, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2019",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2020.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(5, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2020",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2021.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(5, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2021",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=.6) +
+  tm_shape(Y2022.coor.density.raster) + 
+  tm_raster(style = "quantile", n = 3 , palette = viridis(7, direction = 1), alpha = .4, title = "Cases per KM square") + tm_layout(main.title = "Spatial Intensity of HFMD 2022",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+```{r}
+tm_shape(Penang) +
+  tm_borders(alpha= 1) +
+  tm_shape(Y2017.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2017",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha= 1) +
+  tm_shape(Y2018.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2018",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha= 1) +
+  tm_shape(Y2019.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2019",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha= 1) +
+  tm_shape(Y2020.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2020",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha= 1) +
+  tm_shape(Y2021.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2021",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2022.coor.density.raster) + 
+  tm_raster(style = "cont", n = 7 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "Spatial Intensity of HFMD 2022",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+```{r}
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2017.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2017",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2018.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2018",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2019.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2019",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2020.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2020",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2021.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2021",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+tm_shape(Penang) +
+  tm_borders(alpha=1) +
+  tm_shape(Y2022.coor.density.raster) + 
+  tm_raster(style = "fisher", n = 5 , palette = "inferno", alpha = .7, title = "KDE") + tm_layout(main.title = "2022",title.size=1)+
+  tm_layout(legend.outside = TRUE)+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+
+#KDE intensity by Gender
 ## Select Gender and Coordinate from data
 ```{r}
 Coor_Gender <- HFMD_overall[,c(1,8)]
@@ -377,5 +546,104 @@ contour(Coor_Age_2.density, add = TRUE)
 plot(Coor_Age_3.density, main = ">10", las = 1)
 contour(Coor_Age_3.density, add = TRUE)
 ```
+#Plot Case vs Month
+```{r}
+counts <- table(HFMD_overall$MONTH)
+barplot(counts, main = "HFMD Infections", xlab = "MONTH",
+        ylab = "Number of Cases", cex.axis = 1, cex.lab = 1, cex.names = 0.7, ylim = c(0, 3000))
+
+```
+
+# Test for clustering using Gest Test
+
+```{r}
+# Use split to calculate the G-function 
+g_pattern_2017 <- Gest(Y2017_coor.ppp, correction = "none")
+g_pattern_2018 <- Gest(Y2018_coor.ppp, correction = "none")
+g_pattern_2019 <- Gest(Y2019_coor.ppp, correction = "none")
+g_pattern_2020 <- Gest(Y2020_coor.ppp, correction = "none")
+g_pattern_2021 <- Gest(Y2021_coor.ppp, correction = "none")
+g_pattern_2022 <- Gest(Y2022_coor.ppp, correction = "none")
+```
+
+```{r}
+plot(g_pattern_2017, main = "HFMD Pattern 2017", las = 1)
+plot(g_pattern_2018, main = "HFMD Pattern 2018", las = 1)
+plot(g_pattern_2019, main = "HFMD Pattern 2019", las = 1)
+plot(g_pattern_2020, main = "HFMD Pattern 2020", las = 1)
+plot(g_pattern_2021, main = "HFMD Pattern 2021", las = 1)
+plot(g_pattern_2022, main = "HFMD Pattern 2022", las = 1)
+```
+```{r}
+# Generate 99 simulated point patterns under CSR and compute Gest for each
+sim_gest_17 <- envelope(Y2017_coor.ppp, Gest, nsim = 99, correction = "none")
+sim_gest_18 <- envelope(Y2018_coor.ppp, Gest, nsim = 99, correction = "none")
+sim_gest_19 <- envelope(Y2019_coor.ppp, Gest, nsim = 99, correction = "none")
+sim_gest_20 <- envelope(Y2020_coor.ppp, Gest, nsim = 99, correction = "none")
+sim_gest_21 <- envelope(Y2021_coor.ppp, Gest, nsim = 99, correction = "none")
+sim_gest_22 <- envelope(Y2022_coor.ppp, Gest, nsim = 99, correction = "none")
+```
+
+```{r}
+# Plot observed Gest value with envelope
+plot(sim_gest_17, main = "HFMD Pattern 2017",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+plot(sim_gest_18, main = "HFMD Pattern 2018",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+plot(sim_gest_19, main = "HFMD Pattern 2019",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+plot(sim_gest_20, main = "HFMD Pattern 2020",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+plot(sim_gest_21, main = "HFMD Pattern 2021",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+plot(sim_gest_22, main = "HFMD Pattern 2022",xlab = "Distance (KM)",
+        ylab = "Proportion of HFMD Cases", cex.axis = 1, cex.lab = 1)
+```
+```{r}
+library(gtsummary)
+library(tidyverse)
+```
+
+```{r}
+Descr_Overal <- read_excel( here("Density Based Analysis",
+                                 "tbl_data_HFMD.xlsx")) %>%
+  select(YEAR,AGE,age_group,GENDER,RACE,DISTRICT)
+```
+```{r}
+tbl_summary(Descr_Overal,
+            by = YEAR,
+            label = list(AGE~ "Age", age_group ~ "Age Group"),
+statistic =   c(all_categorical() ~    "{n} ({p}%)",
+                            all_continuous()  ~    "{mean} ({sd})"))%>%
+  bold_labels() %>% 
+  italicize_levels()%>% 
+  add_overall()
+```
+```{r}
+#calculate NNI
+library(spatialEco)
+```
+```{r}
+NNI_17 <- nni(Y2017_coor, win = c ("hull", "extent"))
+NNI_18 <- nni(Y2018_coor, win = c ("hull", "extent"))
+NNI_19 <- nni(Y2019_coor, win = c ("hull", "extent"))
+NNI_20 <- nni(Y2020_coor, win = c ("hull", "extent"))
+NNI_21 <- nni(Y2021_coor, win = c ("hull", "extent"))
+NNI_22 <- nni(Y2022_coor, win = c ("hull", "extent"))
+```
+```{r}
+combined_NNI <- bind_rows(NNI_17,NNI_18,NNI_19,NNI_20,NNI_21,NNI_22)
+print(combined_NNI)
+```
+
+
+
+
+
+
+
+
+
+
 
 

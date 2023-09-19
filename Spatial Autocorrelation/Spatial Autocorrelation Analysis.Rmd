@@ -13,6 +13,7 @@ library (ggplot2)
 library (tmap)
 library(leaflet)
 library (RColorBrewer)
+library(dplyr)
 ```
 # Load Data
 ```{r}
@@ -78,13 +79,39 @@ HFMD_22_lag <- lag.listw(lw_22, HFMD_Poly_22$n)
 ```
 # Computing Global Moran I for cases in 2017
 ```{r}
-moran.test(HFMD_Poly_17$n, lw_17)
-moran.test(HFMD_Poly_18$n, lw_18)
-moran.test(HFMD_Poly_19$n, lw_19)
-moran.test(HFMD_Poly_20$n, lw_20)
-moran.test(HFMD_Poly_21$n, lw_21)
-moran.test(HFMD_Poly_22$n, lw_22)
+m_17<- moran.test(HFMD_Poly_17$n, lw_17)
+m_18<-moran.test(HFMD_Poly_18$n, lw_18)
+m_19<-moran.test(HFMD_Poly_19$n, lw_19)
+m_20<-moran.test(HFMD_Poly_20$n, lw_20)
+m_21<-moran.test(HFMD_Poly_21$n, lw_21)
+m_22<-moran.test(HFMD_Poly_22$n, lw_22)
 ```
+```{r}
+mc_17.df <- data.frame(Dataset = "2017",
+                       TestStatistic = m_17$estimate,
+                       PValue = m_17$p.value)
+mc_18.df <- data.frame(Dataset = "2018",
+                       TestStatistic = m_18$estimate,
+                       PValue = m_18$p.value)
+mc_19.df <- data.frame(Dataset = "2019",
+                       TestStatistic = m_19$estimate,
+                       PValue = m_19$p.value)
+mc_20.df <- data.frame(Dataset = "2020",
+                       TestStatistic = m_20$estimate,
+                       PValue = m_20$p.value)
+mc_21.df <- data.frame(Dataset = "2021",
+                       TestStatistic = m_21$estimate,
+                       PValue = m_21$p.value)
+mc_22.df <- data.frame(Dataset = "2022",
+                       TestStatistic = m_22$estimate,
+                       PValue = m_22$p.value)
+```
+# tabulate global moran
+```{r}
+G_Moran <- bind_rows(mc_17.df,mc_18.df,mc_19.df,mc_20.df,mc_21.df,mc_22.df)
+G_Moran
+```
+
 # Computing Local Moran Analysis
 ```{r}
 Local_Moran_17 <- localmoran(HFMD_Poly_17$n,lw_17)
@@ -451,44 +478,50 @@ tm_shape(Penang) + tm_borders(alpha=.6) + tm_shape(HFMD_Penang_Overall_Incidence
 ```
 ```{r}
 #using tmap
-tm_shape(Penang) + 
+Gi_17<- tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_17) +
   tm_polygons(col = "getis_ord_17", title = "Gi Statistic",
              midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd"))+
   tm_layout(main.title = "2017",title.size = 1) +
-  tm_compass(type = "4star", size = 2, position = c("left", "top"))
-tm_shape(Penang) + 
+  tm_compass(type = "4star", size = 2, position = c("left", "top")) +tm_scale_bar(position = c("left", "top"))
+Gi_18 <- tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_18) +
   tm_polygons(col = "getis_ord_18", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
   tm_layout(main.title = "2018",title.size = 1) +
-  tm_compass(type = "4star", size = 2, position = c("left", "top"))
-tm_shape(Penang) + 
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))+tm_scale_bar(position = c("left", "top"))
+Gi_19 <-tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_19) +
   tm_polygons(col = "getis_ord_19", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
   tm_layout(main.title = "2019",title.size = 1) +
-  tm_compass(type = "4star", size = 2, position = c("left", "top"))
-tm_shape(Penang) + 
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))+tm_scale_bar(position = c("left", "top"))
+Gi_20 <-tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_20) +
   tm_polygons(col = "getis_ord_20", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
   tm_layout(main.title = "2020",title.size = 1) +
- tm_compass(type = "4star", size = 2, position = c("left", "top"))
-tm_shape(Penang) + 
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))+tm_scale_bar(position = c("left", "top"))
+Gi_21 <-tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_21) +
   tm_polygons(col = "getis_ord_21", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
  tm_layout(main.title = "2021",title.size = 1) +
-  tm_compass(type = "4star", size = 2, position = c("left", "top"))
-tm_shape(Penang) + 
+  tm_compass(type = "4star", size = 2, position = c("left", "top"))+tm_scale_bar(position = c("left", "top"))
+Gi_22 <-tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
 tm_shape(HFMD_Poly_22) +
   tm_polygons(col = "getis_ord_22", title = "Gi Statistic",midpoint = NA,style = "jenks",palette = brewer.pal(5, "YlOrRd")) +
  tm_layout(main.title = "2022",title.size = 1) +
- tm_compass(type = "4star", size = 2, position = c("left", "top"))
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))+tm_scale_bar(position = c("left", "top"))
 ```
+# Map Getis Ord Gi
+```{r name-of-chunk, fig.width=11, fig.height=9}
+tmap_arrange(Gi_17,Gi_18, Gi_19, Gi_20, Gi_21,Gi_22 , ncol = 3) 
+```
+
+
 ```{r}
 tm_shape(Penang) + 
   tm_polygons(col = "#f7f7f7")+
@@ -501,6 +534,84 @@ tm_shape(HFMD_Poly_22) +
  tm_layout(main.title = "2022",title.size = 1) +
  tm_compass(type = "4star", size = 2, position = c("left", "top"))
 ```
+```{r}
+lee_test_17 <- spdep::lee.test(
+  x=HFMD_Poly_17$n,         
+  y=HFMD_Poly_17$PENDUDUK,     
+  listw=lw_17                
+)
+lee_test_18 <- spdep::lee.test(
+  x=HFMD_Poly_18$n,         
+  y=HFMD_Poly_18$PENDUDUK,     
+  listw=lw_18                
+)
+lee_test_19 <- spdep::lee.test(
+  x=HFMD_Poly_19$n,         
+  y=HFMD_Poly_19$PENDUDUK,     
+  listw=lw_19                
+)
+lee_test_20 <- spdep::lee.test(
+  x=HFMD_Poly_20$n,         
+  y=HFMD_Poly_20$PENDUDUK,     
+  listw=lw_20                
+)
+lee_test_21 <- spdep::lee.test(
+  x=HFMD_Poly_21$n,         
+  y=HFMD_Poly_21$PENDUDUK,     
+  listw=lw_21                
+)
+lee_test_22 <- spdep::lee.test(
+  x=HFMD_Poly_22$n,         
+  y=HFMD_Poly_22$PENDUDUK,     
+  listw=lw_22                
+)
+```
+```{r}
+round(lee_test_17$estimate[1],2)
+round(lee_test_18$estimate[1],2)
+round(lee_test_19$estimate[1],2)
+round(lee_test_20$estimate[1],2)
+round(lee_test_21$estimate[1],2)
+round(lee_test_22$estimate[1],2)
+```
+# Lee's L with Pop Density
+# Export HFMD Poly File to Excel
+```{r}
+library(writexl)
+```
+```{r}
+write_xlsx(HFMD_Poly_22, "C:/Users/ACER/Desktop/Data HFMD/HFMD_Poly_22.xlsx")
+```
+# Read Pop Density File
+```{r}
+Pop_Den_22 <- read_excel( here("Spatial Autocorrelation",
+                                 "HFMD_PopDen_22.xlsx"))
+```
+#Combine Data
+```{r}
+HFMD_22_Pop_Den <- merge(HFMD_Poly_22,Pop_Den_22, by = c("NAMA_DP","NAMMUK") , all=TRUE)
+```
+#Bivariate Lee L Test
+```{r}
+lee_test_HFMD22_Pop_Den <- spdep::lee.test(
+  x=HFMD_22_Pop_Den$n$Pop_Den,         
+  y=HFMD_22_Pop_Den$n,     
+  listw=lw_22                
+)
+```
+```{r}
+round(lee_test_HFMD22_Pop_Den$estimate[1],2)
+```
+```{r}
+tm_shape(HFMD_22_Pop_Den) +
+  tm_polygons(col = "Pop_Den", title = "Population Density",midpoint = NA,style = "cont",n = 4,palette = rev(colorRampPalette(c("red", "lightblue"))(100))) +
+ tm_layout(main.title = "2022",title.size = 1) +
+ tm_compass(type = "4star", size = 2, position = c("left", "top"))
+```
+
+
+
+
 
 
 

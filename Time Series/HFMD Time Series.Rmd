@@ -41,7 +41,6 @@ autoplot(HFMD_time_series) + geom_bar(stat = "identity", fill ="purple" ) +
 ```
 ```{r}
 autoplot(HFMD_time_series) + geom_bar(stat = "identity", fill ="purple" ) +  geom_smooth ()+
-  labs(title = "Monthly Distribution of HFMD Infections in Pulau Pinang",
-       y="Number of Cases", x= "Month") 
+  labs( y="Number of HFMD Cases", x= "Year") 
 ```
 
